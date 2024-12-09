@@ -8,16 +8,16 @@ on:
 env:
   PROJECT_ID: 'aesthetic-site-443805-a0' 
   GAR_LOCATION: 'us-east1'  
-  REPOSITORY: 'next-development'  
-
+  REPOSITORY: 'next-development'
 
 jobs:
   build:
-    name: Building and Push Docker Image GCR
+    name: Build and Push Docker Image to GCR
     runs-on: ubuntu-latest
     permissions:
-        contents: 'read'
-        id-token: 'write'
+      contents: 'read'
+      id-token: 'write'
+    
     steps:
     - name: Check out code
       uses: actions/checkout@v2
@@ -55,11 +55,9 @@ jobs:
 
     # Output GCR Repository name
     - name: Output GCR Repository name
-      env: 
-        GCR_IMAGE_NAME: ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }}
       run: |
-        echo " **** GCR Repository name is ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }} ****"
-        echo " **** Dockerfile name is ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }} ****"
+        echo "**** GCR Repository name is ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }} ****"
+        echo "**** Dockerfile name is ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }} ****"
 
     # Build, tag, and push the Docker image to GCR
     - name: Build, tag, and push image to Google Container Registry
