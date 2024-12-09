@@ -1,0 +1,72 @@
+name: Push Docker Image to Google Cloud Registry
+
+on:
+  push:
+    branches:
+      - 'main'
+
+env:
+  PROJECT_ID: 'aesthetic-site-443805-a0' 
+  GAR_LOCATION: 'us-east1'  
+  REPOSITORY: 'next-development'  
+
+
+jobs:
+  build:
+    name: Building and Push Docker Image GCR
+    runs-on: ubuntu-latest
+    permissions:
+        contents: 'read'
+        id-token: 'write'
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    # Authenticate with Google Cloud
+    - id: auth
+      name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    # Set up gcloud CLI
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+    # Configure Docker to use gcloud as a credential helper for authentication
+    - name: Configure Docker for gcloud
+      run: |
+        gcloud auth configure-docker
+
+    # Determine the GCR Repository name
+    - name: Determine GCR Repository name
+      id: gcr_repository_name
+      run: |
+        if [[ $GITHUB_REF == "refs/heads/main" ]]; then
+          echo "GCR_IMAGE_NAME=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development" >> $GITHUB_OUTPUT
+          echo "DOCKERFILE_NAME=Dockerfile" >> $GITHUB_OUTPUT
+        else
+          echo "The value of GITHUB_REF is $GITHUB_REF"
+          echo "::error:: Branch not supported for deployment"
+          exit 1
+
+    # Output GCR Repository name
+    - name: Output GCR Repository name
+      env: 
+        GCR_IMAGE_NAME: ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }}
+      run: |
+        echo " **** GCR Repository name is ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }} ****"
+        echo " **** Dockerfile name is ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }} ****"
+
+    # Build, tag, and push the Docker image to GCR
+    - name: Build, tag, and push image to Google Container Registry
+      env:
+        GCR_IMAGE_NAME: ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }}
+        DOCKERFILE_NAME: ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }}
+        IMAGE_TAG: latest
+      run: |
+        docker build -f $DOCKERFILE_NAME -t $GCR_IMAGE_NAME:$IMAGE_TAG .
+        docker push $GCR_IMAGE_NAME:$IMAGE_TAG
