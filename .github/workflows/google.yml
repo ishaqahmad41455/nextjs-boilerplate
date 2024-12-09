@@ -52,6 +52,7 @@ jobs:
           echo "The value of GITHUB_REF is $GITHUB_REF"
           echo "::error:: Branch not supported for deployment"
           exit 1
+        fi
 
     # Output GCR Repository name
     - name: Output GCR Repository name
