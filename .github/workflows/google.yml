@@ -39,6 +39,11 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
 
+    # Install the gke-gcloud-auth-plugin
+    - name: Install GKE gcloud auth plugin
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+
     # Configure Docker to use gcloud as a credential helper for authentication
     - name: Configure Docker for gcloud
       run: |
