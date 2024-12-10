@@ -81,23 +81,27 @@ jobs:
     # Authenticate to GKE cluster
     - name: Get GKE credentials
       run: |
-        gcloud container clusters get-credentials autopilot-cluster-munsif --region us-central1 --project ${{ secrets.GCP_PROJECT_ID }}
+        gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} --zone ${{ env.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
         # project_id: ${{ secrets.GCP_PROJECT_ID }}
         # service_account_key: ${{ secrets.GCP_SA_KEY }}
 
+    - name: Verify Kubernetes Cluster Access
+      run: |
+        kubectl cluster-info
+
     # Install kubectl (to ensure it's available)
-    # - name: Install kubectl
-    #   run: |
-    #     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-    #     chmod +x ./kubectl
-    #     sudo mv ./kubectl /usr/local/bin/kubectl
-    #     kubectl version --client
+    - name: Install kubectl
+      run: |
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+        kubectl version --client
 
     # Deploy the new image to GKE
     - name: Deploy to GKE
       run: |
-        #  gcloud container clusters get-credentials autopilot-cluster-munsif --zone us-central1 --project ${{ secrets.GCP_PROJECT_ID }}
-         kubectl apply -f k8s/deployment.yml
-         kubectl apply -f k8s/service.yml
+        #  gcloud container clusters get-credentials hr-development-gke-cluster-autopilot --zone us-central1 --project ${{ secrets.GCP_PROJECT_ID }}
+         kubectl apply -f nextjs-boilerplate/k8s/deployment.yml
+         kubectl apply -f nextjs-boilerplate/k8s/service.yml
          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} nextjs-container=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development:latest
          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
