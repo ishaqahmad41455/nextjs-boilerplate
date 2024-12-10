@@ -85,6 +85,14 @@ jobs:
         # project_id: ${{ secrets.GCP_PROJECT_ID }}
         # service_account_key: ${{ secrets.GCP_SA_KEY }}
 
+    # Install kubectl (to ensure it's available)
+    - name: Install kubectl
+      run: |
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+        kubectl version --client
+
     # Deploy the new image to GKE
     - name: Deploy to GKE
       run: |
