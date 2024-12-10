@@ -1,0 +1,7 @@
+gke_cluster_endpoint = "35.226.232.147"
+gke_cluster_location = "us-central1"
+gke_cluster_master_version = "1.30.5-gke.1699000"
+gke_cluster_name = "hr-development-gke-cluster-autopilot"
+mysubnet_id = "projects/aesthetic-site-443805-a0/regions/us-central1/subnetworks/hr-development-us-central1-subnet"
+vpc_id = "projects/aesthetic-site-443805-a0/global/networks/hr-development-vpc"
+vpc_self_link = "https://www.googleapis.com/compute/v1/projects/aesthetic-site-443805-a0/global/networks/hr-development-vpc"

@@ -1,4 +1,4 @@
-name: Push Docker Image to Google Cloud Registry
+name: Push Docker Image to Google Cloud Registry # Build, Push Docker Image to Google Cloud Registry, and Deploy to GKE
 
 on:
   push:
@@ -9,6 +9,9 @@ env:
   PROJECT_ID: 'aesthetic-site-443805-a0' 
   GAR_LOCATION: 'us-east1'  
   REPOSITORY: 'next-development'
+  CLUSTER_NAME: 'hr-development-gke-cluster-autopilot'
+  GKE_ZONE: 'us-central1'  # Set to your GKE cluster zone
+  DEPLOYMENT_NAME: 'nextjs-app'  # Kubernetes Deployment name
 
 jobs:
   build:
@@ -69,3 +72,16 @@ jobs:
       run: |
         docker build -f $DOCKERFILE_NAME -t $GCR_IMAGE_NAME:$IMAGE_TAG .
         docker push $GCR_IMAGE_NAME:$IMAGE_TAG
+
+    # Authenticate to GKE cluster
+    - name: Get GKE credentials
+      run: |
+        gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} --zone ${{ env.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+
+    # Deploy the new image to GKE
+    - name: Deploy to GKE
+      run: |
+         kubectl apply -f k8s/deployment.yml
+         kubectl apply -f k8s/service.yml
+         kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} nextjs-container=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development:latest
+         kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
