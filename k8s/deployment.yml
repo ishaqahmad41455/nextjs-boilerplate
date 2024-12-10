@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: nextjs-container
-        image: gcr.io/YOUR_PROJECT_ID/next-development:latest
+        image: gcr.io/GCP_PROJECT_ID/next-development:latest
         ports:
         - containerPort: 3000
         imagePullSecrets:
