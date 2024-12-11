@@ -98,7 +98,7 @@ jobs:
     # Deploy the new image to GKE
     - name: Deploy to GKE
       run: |
-         kubectl apply -f nextjs-boilerplate/k8s/deployment.yml
-         kubectl apply -f nextjs-boilerplate/k8s/service.yml
+         kubectl apply -f k8s/deployment.yml
+         kubectl apply -f k8s/service.yml
          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} nextjs-container=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development:latest
          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
