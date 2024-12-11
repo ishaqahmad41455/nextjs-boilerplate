@@ -16,9 +16,9 @@ spec:
     spec:
       containers:
         - name: nextjs-container
-        image: gcr.io/aesthetic-site-443805-a0/next-development:latest
-        ports:
-        - containerPort: 3000
-        imagePullSecrets:
+          image: gcr.io/aesthetic-site-443805-a0/next-development:latest
+          ports:
+            - containerPort: 3000
+      imagePullSecrets:
         - name: ecr-secret 
       restartPolicy: Always
