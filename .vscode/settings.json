@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/435b9df3-3b8e-4d2d-897f-30cff09fbd17/resourceGroups/RG-Rao/providers/Microsoft.Web/sites/ishaq-AP",
+    "appService.deploySubpath": "."
+}
