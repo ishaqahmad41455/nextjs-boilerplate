@@ -1,104 +1,104 @@
-name: Push Docker Image to Google Cloud Registry # Build, Push Docker Image to Google Cloud Registry, and Deploy to GKE
+# name: Push Docker Image to Google Cloud Registry # Build, Push Docker Image to Google Cloud Registry, and Deploy to GKE
 
-on:
-  push:
-    branches:
-      - 'main'
+# on:
+#   push:
+#     branches:
+#       - 'main'
 
-env:
-  PROJECT_ID: 'aesthetic-site-443805-a0' 
-  GAR_LOCATION: 'us-central1'  
-  REPOSITORY: 'next-development'
-  # CLUSTER_NAME: 'hr-development-gke-cluster-autopilot'
-  # GKE_ZONE: 'us-central1'  # Set to your GKE cluster zone
-  DEPLOYMENT_NAME: 'nextjs-app'  # Kubernetes Deployment name
+# env:
+#   PROJECT_ID: 'aesthetic-site-443805-a0' 
+#   GAR_LOCATION: 'us-central1'  
+#   REPOSITORY: 'next-development'
+#   # CLUSTER_NAME: 'hr-development-gke-cluster-autopilot'
+#   # GKE_ZONE: 'us-central1'  # Set to your GKE cluster zone
+#   DEPLOYMENT_NAME: 'nextjs-app'  # Kubernetes Deployment name
 
-jobs:
-  build:
-    name: Build and Push Docker Image to GCR
-    runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
+# jobs:
+#   build:
+#     name: Build and Push Docker Image to GCR
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: 'read'
+#       id-token: 'write'
     
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v2
+#     steps:
+#     - name: Check out code
+#       uses: actions/checkout@v2
 
-    # Authenticate with Google Cloud
-    - id: auth
-      name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+#     # Authenticate with Google Cloud
+#     - id: auth
+#       name: Authenticate to Google Cloud
+#       uses: google-github-actions/auth@v1
+#       with:
+#         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    # Set up gcloud CLI
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
+#     # Set up gcloud CLI
+#     - name: Set up Google Cloud SDK
+#       uses: google-github-actions/setup-gcloud@v1
+#       with:
+#         project_id: ${{ secrets.GCP_PROJECT_ID }}
+#         service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-    # Install the gke-gcloud-auth-plugin
-    - name: Install GKE gcloud auth plugin
-      run: |
-        gcloud components install gke-gcloud-auth-plugin
+#     # Install the gke-gcloud-auth-plugin
+#     - name: Install GKE gcloud auth plugin
+#       run: |
+#         gcloud components install gke-gcloud-auth-plugin
 
-    # Configure Docker to use gcloud as a credential helper for authentication
-    - name: Configure Docker for gcloud
-      run: |
-        gcloud auth configure-docker
+#     # Configure Docker to use gcloud as a credential helper for authentication
+#     - name: Configure Docker for gcloud
+#       run: |
+#         gcloud auth configure-docker
 
-    # Determine the GCR Repository name
-    - name: Determine GCR Repository name
-      id: gcr_repository_name
-      run: |
-        if [[ $GITHUB_REF == "refs/heads/main" ]]; then
-          echo "GCR_IMAGE_NAME=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development" >> $GITHUB_OUTPUT
-          echo "DOCKERFILE_NAME=Dockerfile" >> $GITHUB_OUTPUT
-        else
-          echo "The value of GITHUB_REF is $GITHUB_REF"
-          echo "::error:: Branch not supported for deployment"
-          exit 1
-        fi
+#     # Determine the GCR Repository name
+#     - name: Determine GCR Repository name
+#       id: gcr_repository_name
+#       run: |
+#         if [[ $GITHUB_REF == "refs/heads/main" ]]; then
+#           echo "GCR_IMAGE_NAME=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development" >> $GITHUB_OUTPUT
+#           echo "DOCKERFILE_NAME=Dockerfile" >> $GITHUB_OUTPUT
+#         else
+#           echo "The value of GITHUB_REF is $GITHUB_REF"
+#           echo "::error:: Branch not supported for deployment"
+#           exit 1
+#         fi
 
-    # Output GCR Repository name
-    - name: Output GCR Repository name
-      run: |
-        echo "**** GCR Repository name is ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }} ****"
-        echo "**** Dockerfile name is ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }} ****"
+#     # Output GCR Repository name
+#     - name: Output GCR Repository name
+#       run: |
+#         echo "**** GCR Repository name is ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }} ****"
+#         echo "**** Dockerfile name is ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }} ****"
 
-    # Build, tag, and push the Docker image to GCR
-    - name: Build, tag, and push image to Google Container Registry
-      env:
-        GCR_IMAGE_NAME: ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }}
-        DOCKERFILE_NAME: ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }}
-        IMAGE_TAG: latest
-      run: |
-        docker build -f $DOCKERFILE_NAME -t $GCR_IMAGE_NAME:$IMAGE_TAG .
-        docker push $GCR_IMAGE_NAME:$IMAGE_TAG
+#     # Build, tag, and push the Docker image to GCR
+#     - name: Build, tag, and push image to Google Container Registry
+#       env:
+#         GCR_IMAGE_NAME: ${{ steps.gcr_repository_name.outputs.GCR_IMAGE_NAME }}
+#         DOCKERFILE_NAME: ${{ steps.gcr_repository_name.outputs.DOCKERFILE_NAME }}
+#         IMAGE_TAG: latest
+#       run: |
+#         docker build -f $DOCKERFILE_NAME -t $GCR_IMAGE_NAME:$IMAGE_TAG .
+#         docker push $GCR_IMAGE_NAME:$IMAGE_TAG
 
-    # # Authenticate to GKE cluster
-    # - name: Get GKE credentials
-    #   run: |
-    #     gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} --zone ${{ env.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+#     # # Authenticate to GKE cluster
+#     # - name: Get GKE credentials
+#     #   run: |
+#     #     gcloud container clusters get-credentials ${{ env.CLUSTER_NAME }} --zone ${{ env.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
 
-    # - name: Verify Kubernetes Cluster Access
-    #   run: |
-    #     kubectl cluster-info
+#     # - name: Verify Kubernetes Cluster Access
+#     #   run: |
+#     #     kubectl cluster-info
 
-    # # Install kubectl (to ensure it's available)
-    # - name: Install kubectl
-    #   run: |
-    #     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-    #     chmod +x ./kubectl
-    #     sudo mv ./kubectl /usr/local/bin/kubectl
-    #     kubectl version --client
+#     # # Install kubectl (to ensure it's available)
+#     # - name: Install kubectl
+#     #   run: |
+#     #     curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+#     #     chmod +x ./kubectl
+#     #     sudo mv ./kubectl /usr/local/bin/kubectl
+#     #     kubectl version --client
 
-    # # Deploy the new image to GKE
-    # - name: Deploy to GKE
-    #   run: |
-    #      kubectl apply -f k8s/deployment.yml
-    #      kubectl apply -f k8s/service.yml
-    #      kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} nextjs-container=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development:latest
-    #      kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+#     # # Deploy the new image to GKE
+#     # - name: Deploy to GKE
+#     #   run: |
+#     #      kubectl apply -f k8s/deployment.yml
+#     #      kubectl apply -f k8s/service.yml
+#     #      kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} nextjs-container=gcr.io/${{ secrets.GCP_PROJECT_ID }}/next-development:latest
+#     #      kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
